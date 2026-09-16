@@ -2,17 +2,30 @@ const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema(
   {
-    title: String,
+    title: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
     description: String,
-    priority: String,
+
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      required: true
+    },
+
     isCompleted: {
       type: Boolean,
       default: false
     },
+
     completionDate: {
       type: Date,
       default: null
     },
+
     dueDate: {
       type: Date,
       default: null

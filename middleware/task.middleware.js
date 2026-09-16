@@ -1,77 +1,58 @@
+const VALID_PRIORITIES = ["low", "medium", "high"];
+
 const validateTask = (req, res, next) => {
   const { title, description, priority } = req.body;
 
-  if ( !title || !description || !priority || typeof title !== "string" || typeof description !== "string" ) {
-    return res.status(400).json({
-      message: "Incomplete Data Received"
-    });
+  if (!title || !description || !priority) {
+    return res.status(400).json({ message: "title, description and priority are required" });
   }
 
-  if (!["low", "medium", "high"].includes(priority)) {
-    return res.status(400).json({
-      message: "Priority must be low, medium or high"
-    });
+  if (typeof title !== "string" || typeof description !== "string") {
+    return res.status(400).json({ message: "title and description must be strings" });
+  }
+
+  if (!VALID_PRIORITIES.includes(priority)) {
+    return res.status(400).json({ message: "priority must be low, medium or high" });
   }
 
   next();
 };
 
 const validateTaskUpdate = (req, res, next) => {
-  const allowedFields = [ "title", "description", "priority", "isCompleted", "dueDat" ];
+  const allowedFields = ["title", "description", "priority", "isCompleted", "dueDate"];
+  const receivedFields = Object.keys(req.body);
 
-  const fields = Object.keys(req.body);
-
-  if (fields.length === 0) {
-    return res.status(400).json({
-      message: "Incomplete Data Received"
-    });
+  if (receivedFields.length === 0) {
+    return res.status(400).json({ message: "Please provide at least one field to update" });
   }
 
-  const invalidField = fields.some(
-    (field) => !allowedFields.includes(field)
-  );
-
-  if (invalidField) {
-    return res.status(400).json({
-      message: "Invalid field"
-    });
+  const hasInvalidField = receivedFields.some((field) => !allowedFields.includes(field));
+  if (hasInvalidField) {
+    return res.status(400).json({ message: `Only these fields are allowed: ${allowedFields.join(", ")}` });
   }
 
-  if (
-    req.body.title !== undefined &&
-    (typeof req.body.title !== "string" || !req.body.title.trim())
-  ) {
-    return res.status(400).json({
-      message: "Title is required"
-    });
+  if (req.body.title !== undefined) {
+    if (typeof req.body.title !== "string" || !req.body.title.trim()) {
+      return res.status(400).json({ message: "title must be a non-empty string" });
+    }
   }
 
-  if (
-    req.body.description !== undefined &&
-    (typeof req.body.description !== "string" ||
-      !req.body.description.trim())
-  ) {
-    return res.status(400).json({
-      message: "Description is required"
-    });
+  if (req.body.description !== undefined) {
+    if (typeof req.body.description !== "string" || !req.body.description.trim()) {
+      return res.status(400).json({ message: "description must be a non-empty string" });
+    }
   }
 
-  if (
-    req.body.priority !== undefined &&
-    !["low", "medium", "high"].includes(req.body.priority)
-  ) {
-    return res.status(400).json({
-      message: "Priority must be low, medium or high"
-    });
+  if (req.body.priority !== undefined) {
+    if (!VALID_PRIORITIES.includes(req.body.priority)) {
+      return res.status(400).json({ message: "priority must be low, medium or high" });
+    }
   }
 
-  if (
-    req.body.isCompleted !== undefined &&
-    typeof req.body.isCompleted !== "boolean"
-  ) {
-    return res.status(400).json({
-      message: "isCompleted must be true or false"
-    });
+  if (req.body.isCompleted !== undefined) {
+    if (typeof req.body.isCompleted !== "boolean") {
+      return res.status(400).json({ message: "isCompleted must be true or false" });
+    }
   }
 
   next();
@@ -81,15 +62,11 @@ const validateDelete = (req, res, next) => {
   const { priority } = req.query;
 
   if (!priority) {
-    return res.status(400).json({
-      message: "Priority query parameter is required"
-    });
+    return res.status(400).json({ message: "priority query parameter is required (e.g. ?priority=high)" });
   }
 
-  if (!["low", "medium", "high"].includes(priority)) {
-    return res.status(400).json({
-      message: "Priority must be low, medium or high"
-    });
+  if (!VALID_PRIORITIES.includes(priority)) {
+    return res.status(400).json({ message: "priority must be low, medium or high" });
   }
 
   next();

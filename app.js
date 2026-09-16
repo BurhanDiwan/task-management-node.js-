@@ -15,14 +15,17 @@ connectDB();
 app.use("/tasks", taskRoutes);
 
 app.get("/", (req, res) => {
-  res.json({
-    message: "Advanced Task Management System API is running"
-  });
+  res.json({ message: "Advanced Task Management System API is running" });
 });
 
 app.use((req, res) => {
-  res.status(404).json({
-    message: "Route not found"
+  res.status(404).json({ message: "Route not found" });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal Server Error"
   });
 });
 

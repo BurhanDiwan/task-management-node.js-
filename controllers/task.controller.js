@@ -5,12 +5,9 @@ const createTask = async (req, res) => {
   try {
     const { title, description, priority, isCompleted, dueDate } = req.body;
 
-    const existingTask = await Task.findOne({ title });
-
-    if (existingTask) {
-      return res.status(400).json({
-        message: "Task title already exists"
-      });
+    const titleAlreadyExists = await Task.findOne({ title });
+    if (titleAlreadyExists) {
+      return res.status(400).json({ message: "A task with this title already exists" });
     }
 
     const task = await Task.create({
@@ -28,7 +25,7 @@ const createTask = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error creating task",
+      message: "Something went wrong while creating the task",
       error: error.message
     });
   }
@@ -41,25 +38,13 @@ const getTasks = async (req, res) => {
     const filter = {};
 
     if (priority) {
-      if (!["low", "medium", "high"].includes(priority)) {
-        return res.status(400).json({
-          message: "Priority must be low, medium or high"
-        });
-      }
-
       filter.priority = priority;
     }
 
-    if (status) {
-      if (status === "completed") {
-        filter.isCompleted = true;
-      } else if (status === "pending") {
-        filter.isCompleted = false;
-      } else {
-        return res.status(400).json({
-          message: "Status must be completed or pending"
-        });
-      }
+    if (status === "completed") {
+      filter.isCompleted = true;
+    } else if (status === "pending") {
+      filter.isCompleted = false;
     }
 
     const tasks = await Task.find(filter).sort({ createdAt: -1 });
@@ -70,7 +55,7 @@ const getTasks = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error retrieving tasks",
+      message: "Something went wrong while fetching tasks",
       error: error.message
     });
   }
@@ -81,14 +66,11 @@ const updateTask = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        message: "Invalid task ID"
-      });
+      return res.status(400).json({ message: "The provided task ID is not valid" });
     }
 
+    const allowedFields = ["title", "description", "priority", "isCompleted", "dueDate"];
     const updateData = {};
-
-    const allowedFields = [ "title", "description", "priority", "isCompleted", "dueDate" ];
 
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
@@ -98,44 +80,34 @@ const updateTask = async (req, res) => {
 
     if (req.body.isCompleted === true) {
       updateData.completionDate = new Date();
-    }
-
-    if (req.body.isCompleted === false) {
+    } else if (req.body.isCompleted === false) {
       updateData.completionDate = null;
     }
 
     if (req.body.title !== undefined) {
-      const existingTask = await Task.findOne({
+      const titleTakenByAnotherTask = await Task.findOne({
         title: req.body.title,
         _id: { $ne: id }
       });
 
-      if (existingTask) {
-        return res.status(400).json({
-          message: "Task title already exists"
-        });
+      if (titleTakenByAnotherTask) {
+        return res.status(400).json({ message: "Another task already has this title" });
       }
     }
 
-    const task = await Task.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
+    const updatedTask = await Task.findByIdAndUpdate(id, updateData, { new: true });
 
-    if (!task) {
-      return res.status(404).json({
-        message: "Task not found"
-      });
+    if (!updatedTask) {
+      return res.status(404).json({ message: "No task found with that ID" });
     }
 
     res.status(200).json({
       message: "Task updated successfully",
-      task
+      task: updatedTask
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error updating task",
+      message: "Something went wrong while updating the task",
       error: error.message
     });
   }
@@ -145,17 +117,15 @@ const deleteTasks = async (req, res) => {
   try {
     const { priority } = req.query;
 
-    const result = await Task.deleteMany({
-      priority
-    });
+    const result = await Task.deleteMany({ priority });
 
     res.status(200).json({
-      message: "Tasks deleted successfully",
+      message: `All ${priority} priority tasks deleted successfully`,
       deletedCount: result.deletedCount
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error deleting tasks",
+      message: "Something went wrong while deleting tasks",
       error: error.message
     });
   }
