@@ -1,13 +1,7 @@
 const validateTask = (req, res, next) => {
   const { title, description, priority } = req.body;
 
-  if (
-    !title ||
-    !description ||
-    !priority ||
-    typeof title !== "string" ||
-    typeof description !== "string"
-  ) {
+  if ( !title || !description || !priority || typeof title !== "string" || typeof description !== "string" ) {
     return res.status(400).json({
       message: "Incomplete Data Received"
     });
@@ -23,13 +17,7 @@ const validateTask = (req, res, next) => {
 };
 
 const validateTaskUpdate = (req, res, next) => {
-  const allowedFields = [
-    "title",
-    "description",
-    "priority",
-    "isCompleted",
-    "dueDate"
-  ];
+  const allowedFields = [ "title", "description", "priority", "isCompleted", "dueDat" ];
 
   const fields = Object.keys(req.body);
 
@@ -107,8 +95,4 @@ const validateDelete = (req, res, next) => {
   next();
 };
 
-module.exports = {
-  validateTask,
-  validateTaskUpdate,
-  validateDelete
-};
+module.exports = { validateTask, validateTaskUpdate, validateDelete };

@@ -88,13 +88,7 @@ const updateTask = async (req, res) => {
 
     const updateData = {};
 
-    const allowedFields = [
-      "title",
-      "description",
-      "priority",
-      "isCompleted",
-      "dueDate"
-    ];
+    const allowedFields = [ "title", "description", "priority", "isCompleted", "dueDate" ];
 
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
@@ -167,9 +161,4 @@ const deleteTasks = async (req, res) => {
   }
 };
 
-module.exports = {
-  createTask,
-  getTasks,
-  updateTask,
-  deleteTasks
-};
+module.exports = { createTask, getTasks, updateTask, deleteTasks };
